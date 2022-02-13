@@ -13,6 +13,7 @@ use AppBundle\Entity\SwipeCard;
 use AppBundle\Entity\User;
 use AppBundle\Event\HelloassoEvent;
 use AppBundle\Event\SwipeCardEvent;
+use AppBundle\Event\ShiftValidatedEvent;
 use AppBundle\Service\MembershipService;
 use AppBundle\Twig\Extension\AppExtension;
 use Psr\Log\LoggerInterface;
@@ -99,7 +100,7 @@ class DefaultController extends Controller
                         $remainder = $this->get('membership_service')->getRemainder($membership);
                         $remainingDays = intval($remainder->format("%R%a"));
                         if ($remainingDays < 0)
-                            $session->getFlashBag()->add('error', 'Oups, ton adhésion  a expiré il y a ' . $remainder->format('%a jours') . '... n\'oublie pas de ré-adhérer !');
+                            $session->getFlashBag()->add('error', 'Oups, ton adhésion a expiré il y a ' . $remainder->format('%a jours') . '... n\'oublie pas de ré-adhérer !');
                         else {
                             $session->getFlashBag()->add('warning',
                                 'Ton adhésion expire dans ' . $remainingDays . ' jours.<br>' .
@@ -230,6 +231,16 @@ class DefaultController extends Controller
             if ($this->swipeCardLogging) {
                 $dispatcher = $this->get('event_dispatcher');
                 $dispatcher->dispatch(SwipeCardEvent::SWIPE_CARD_SCANNED, new SwipeCardEvent($counter));
+            }
+            $shifts = $em->getRepository('AppBundle:Shift')->getOnGoingShifts($beneficiary);
+            $dispatcher = $this->get('event_dispatcher');
+            foreach ($shifts as $shift) {
+                if ($shift->getWasCarriedOut() == 0) {
+                    $shift->validateShiftParticipation();
+                    $em->persist($shift);
+                    $em->flush();
+                    $dispatcher->dispatch(ShiftValidatedEvent::NAME, new ShiftValidatedEvent($shift, $beneficiary->getMembership()));
+                }
             }
             return $this->render('user/check.html.twig', [
                 'beneficiary' => $beneficiary,
@@ -379,7 +390,7 @@ class DefaultController extends Controller
             return $this->redirectToRoute('homepage');
         } else {
             $em = $this->getDoctrine()->getManager();
-            $shifts = $em->getRepository('AppBundle:Shift')->findBy(array('start' => $shift->getStart(), 'end' => $shift->getEnd()));
+            $shifts = $em->getRepository('AppBundle:Shift')->findBy(array('start' => $shift->getStart(), 'end' => $shift->getEnd(), 'job' => $shift->getJob()));
             $coShifts = array();
             foreach ($shifts as $s) {
                 if ($s->getBooker() != null && $s->getId() != $shift->getId()) {

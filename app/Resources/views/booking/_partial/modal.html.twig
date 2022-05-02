@@ -12,10 +12,10 @@
             <div class="card-content">
               {% if not shift_service.canBookDuration(beneficiary, shift_service.getMinimalShiftDuration, cycle) %}
                 <span class="card-title">Attention, tu as déjà fait ton quota d'heures sur ce cycle.</span>
-                <p>Ce créneau ne sera pas comptabilisé dans ton calcul d'heures car seul un maximum de {{ due_duration_by_cycle | duration_from_minutes }} est comptabilisé par cycle.</p>
+                <p>Ce créneau ne sera pas comptabilisé dans ton calcul d'heures car seul un maximum de {{ due_duration_by_cycle | duration_from_minutes }} est comptabilisé par cycle pour limiter l'épuisement des bénévoles.</p>
               {% else %}
                 <span class="card-title">Attention, avec ce créneau tu dépasseras les {{ due_duration_by_cycle | duration_from_minutes }} de bénévolat sur ton cycle.</span>
-                <p>Ce créneau ne sera qu'en partie comptabilisé dans ton calcul d'heures, car seul un maximum de {{ due_duration_by_cycle | duration_from_minutes }} est comptabilisé par cycle.</p>
+                <p>Ce créneau ne sera qu'en partie comptabilisé dans ton calcul d'heures, car seul un maximum de {{ due_duration_by_cycle | duration_from_minutes }} est comptabilisé par cycle pour limiter l'épuisement des bénévoles.</p>
               {% endif %}
             </div>
           </div>
@@ -37,7 +37,7 @@
                                         <i>{{ formation.name }}</i>
                                     {% if not loop.last %}, {% endif %}
                                 {% endfor %}.<br>
-                                Tes compétences sont précieuses, pense si possible à les valoriser sur <b>un créneau qualifié</b>.
+                                Tu pourra une prochaine fois t'inscrire sur <b>un créneau qualifié</b>.
                             </span>
                         </div>
                     </div>
@@ -102,8 +102,8 @@
                     {% endfor %}
                 {% endif %}
             </div>
-            <p>Attention ! Cette inscription vous engage. <br>
-                Pour pouvoir annuler, votre créneau devra trouver repreneur.
+            <p>Attention ! Cette inscription est importante pour le fonctionnement de l'association. <br>
+                En cas d'annulation, essaie de trouver repreneur.
             </p>
         {% endif %}
     </div>

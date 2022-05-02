@@ -64,6 +64,13 @@ class Shift
     private $dismissedReason;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="was_carried_out", type="boolean", options={"default" : 0})
+     */
+    private $wasCarriedOut;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Beneficiary", inversedBy="shifts")
      * @ORM\JoinColumn(name="shifter_id", referencedColumnName="id")
      */
@@ -96,6 +103,13 @@ class Shift
     private $job;
 
     /**
+     * One shift may have been created from One PeriodPosition.
+     * @ORM\ManyToOne(targetEntity="PeriodPosition")
+     * @ORM\JoinColumn(name="position_id", referencedColumnName="id", onDelete="SET NULL")
+     */
+    private $position;
+
+    /**
      * @ORM\OneToMany(targetEntity="TimeLog", mappedBy="shift")
      */
     private $timeLogs;
@@ -117,6 +131,7 @@ class Shift
     public function __construct()
     {
         $this->isDismissed = false;
+        $this->wasCarriedOut = false;
     }
 
     public function __toString()
@@ -277,6 +292,52 @@ class Shift
     public function getDismissedReason()
     {
         return $this->dismissedReason;
+    }
+
+    /**
+     * Set wasCarriedOut
+     *
+     * @param boolean $wasCarriedOut
+     *
+     * @return BookedShift
+     */
+    public function setWasCarriedOut($wasCarriedOut)
+    {
+        $this->wasCarriedOut = $wasCarriedOut;
+
+        return $this;
+    }
+
+    /**
+     * Validate shift participation
+     *
+     * @return BookedShift
+     */
+    public function validateShiftParticipation()
+    {
+        $this->wasCarriedOut = 1;
+        return $this;
+    }
+
+    /**
+     * Invalidate shift participation
+     *
+     * @return BookedShift
+     */
+    public function invalidateShiftParticipation()
+    {
+        $this->wasCarriedOut = 0;
+        return $this;
+    }
+
+    /**
+     * Get wasCarriedOut
+     *
+     * @return bool
+     */
+    public function getWasCarriedOut()
+    {
+        return $this->wasCarriedOut;
     }
 
     /**
@@ -541,5 +602,18 @@ class Shift
         $this->fixe = $fixe;
     }
 
+    /**
+     * Set job
+     *
+     * @param \AppBundle\Entity\PeriodPosition $position
+     *
+     * @return Shift
+     */
+    public function setPosition(\AppBundle\Entity\PeriodPosition $position = null)
+    {
+        $this->position = $position;
+
+        return $this;
+    }
 
 }
